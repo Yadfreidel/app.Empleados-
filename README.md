@@ -59,36 +59,29 @@ app.empleados/
 │   └── utils/            # Helpers, tokens de color/status
 ├── types/                # Tipos TypeScript globales
 ├── middleware.ts          # Protección de rutas /admin
+├── supabase/
+│   └── schema.sql        # Esquema completo DDL + RLS + Triggers + Datos semilla
 └── .env.local.example    # Plantilla de variables de entorno
 ```
 
-## Fases de construcción
+## Configuración y Puesta en Marcha con Supabase
 
-| Fase | Estado | Descripción |
-|------|--------|-------------|
-| 1 — Base | ✅ Completada | Next.js + estructura + diseño F&M |
-| 2 — Supabase | ⏳ Pendiente | Migrations, tablas, RLS |
-| 3 — Calendario | ⏳ Pendiente | Consulta real de actividades |
-| 4 — Admin | ⏳ Pendiente | CRUD completo |
-| 5 — UX | ⏳ Pendiente | Polish y animaciones |
-| 6 — Seguridad | ⏳ Pendiente | Revisión RLS y audit |
-| 7 — Pruebas | ⏳ Pendiente | Tests móvil/PC |
-| 8 — Deploy | ⏳ Pendiente | Vercel |
+1. Crea tu proyecto en [Supabase](https://supabase.com).
+2. Ve a **SQL Editor** en tu panel de Supabase y ejecuta el contenido de [`supabase/schema.sql`](supabase/schema.sql).
+3. Copia el archivo `.env.local.example` a `.env.local`:
+   ```bash
+   cp .env.local.example .env.local
+   ```
+4. Completa `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY` en `.env.local`.
+5. En **Authentication > Users** de Supabase, crea tu usuario administrador y asígnale el rol `'admin'` en `profiles` (o vía user metadata `{"role": "admin"}`).
 
-## Decisiones técnicas
+## Estado del Proyecto
 
-- **App Router**: Aprovecha Server Components para mejor rendimiento
-- **RLS en Supabase**: La seguridad está en la base de datos, no solo en el frontend
-- **Diseño**: Paleta verde/azul inspirada en logo F&M, sin hardcodear colores de tipo de operación
-- **`active=false`**: Para desactivar hoteles/tipos sin romper registros históricos
-- **date-fns + locale `es`**: Fechas en español para el mercado latinoamericano
-- **Zod**: Validación idéntica en frontend y preparada para server actions
-
-## Seguridad
-
-- ✅ Solo `NEXT_PUBLIC_*` keys en el browser (anon key)
-- ✅ `service_role` key NUNCA en el cliente
-- ✅ RLS aplicado a todas las tablas (Fase 2)
-- ✅ Validación Zod en todos los formularios
-- ✅ Confirmación de eliminaciones (Fase 4)
-- ✅ Audit logs de acciones administrativas (Fase 2)
+| Módulo / Fase | Estado | Descripción |
+|---|---|---|
+| Auditoría & Core | ✅ Completado | Tipos TypeScript, Zod validations, Next.js 16 (Turbopack) |
+| Base de Datos Supabase | ✅ Completado | Schema DDL, RLS policies, trigger auth, índices y seeds |
+| Calendario Público | ✅ Completado | Conexión Supabase, filtros, panel diario, fallback demo |
+| Panel de Administración | ✅ Completado | Dashboard con métricas, CRUD de Actividades, Hoteles y Operaciones |
+| Autenticación & Seguridad | ✅ Completado | Login con Supabase Auth, middleware de protección de rutas `/admin` |
+| Build de Producción | ✅ Verificado | `npm run build` compila al 100% sin errores de tipos |
