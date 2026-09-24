@@ -1,76 +1,46 @@
 // components/layout/Logo.tsx
+import Image from 'next/image'
 import { cn } from '@/lib/utils'
 
 interface LogoProps {
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'sm' | 'md' | 'lg' | 'xl'
   showText?: boolean
   className?: string
   textColor?: string
 }
 
 const sizes = {
-  sm: { icon: 28, fontSize: '0.9rem', gap: '0.5rem' },
-  md: { icon: 36, fontSize: '1.1rem', gap: '0.625rem' },
-  lg: { icon: 48, fontSize: '1.4rem', gap: '0.75rem' },
+  sm: { icon: 34, fontSize: '0.95rem', gap: '0.625rem' },
+  md: { icon: 44, fontSize: '1.15rem', gap: '0.75rem' },
+  lg: { icon: 64, fontSize: '1.45rem', gap: '0.875rem' },
+  xl: { icon: 84, fontSize: '1.75rem', gap: '1rem' },
 }
 
 export default function Logo({ size = 'md', showText = true, className, textColor }: LogoProps) {
-  const s = sizes[size]
+  const s = sizes[size] || sizes.md
 
   return (
-    <div className={cn('flex items-center', className)} style={{ gap: s.gap }}>
-      {/* Icon mark */}
+    <div className={cn('flex items-center select-none', className)} style={{ gap: s.gap }}>
+      {/* Official Company Logo */}
       <div
+        className="relative flex-shrink-0 rounded-full overflow-hidden shadow-sm border border-slate-100/80 transition-transform duration-200 hover:scale-105"
         style={{
-          width:  s.icon,
+          width: s.icon,
           height: s.icon,
-          borderRadius: '28%',
-          background: 'linear-gradient(135deg, #15803d 0%, #1d4ed8 100%)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexShrink: 0,
-          boxShadow: '0 2px 8px rgb(21 128 61 / 0.35)',
+          boxShadow: '0 2px 8px rgba(22, 163, 74, 0.25)',
         }}
-        aria-hidden="true"
       >
-        {/* F&M SVG mark */}
-        <svg
-          width={Math.round(s.icon * 0.6)}
-          height={Math.round(s.icon * 0.6)}
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          {/* Shield / leaf shape */}
-          <path
-            d="M12 2L4 5v7c0 4.5 3.3 8.7 8 9.9C17.7 20.7 21 16.5 21 12V5L12 2z"
-            fill="white"
-            fillOpacity="0.2"
-            stroke="white"
-            strokeWidth="1.5"
-            strokeLinejoin="round"
-          />
-          {/* F letter */}
-          <path
-            d="M7 9h4M7 12h3M7 9v6"
-            stroke="white"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          {/* M letter */}
-          <path
-            d="M13 15V9l2.5 3.5L18 9v6"
-            stroke="white"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        <Image
+          src="/images/logo.png"
+          alt="F&M Fumigación Logo"
+          width={s.icon * 2}
+          height={s.icon * 2}
+          className="w-full h-full object-cover rounded-full"
+          priority
+        />
       </div>
 
-      {/* Text */}
+      {/* Brand Text */}
       {showText && (
         <div style={{ color: textColor || 'var(--color-text)' }}>
           <div
@@ -86,10 +56,10 @@ export default function Logo({ size = 'md', showText = true, className, textColo
           <div
             style={{
               fontSize: `calc(${s.fontSize} * 0.65)`,
-              fontWeight: 500,
-              letterSpacing: '0.05em',
+              fontWeight: 600,
+              letterSpacing: '0.06em',
               textTransform: 'uppercase',
-              opacity: 0.65,
+              color: 'var(--fm-green-700)',
             }}
           >
             Fumigación

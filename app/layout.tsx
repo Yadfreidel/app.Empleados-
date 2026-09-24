@@ -10,6 +10,11 @@ export const metadata: Metadata = {
   description: 'Sistema de gestión operativa para F&M Fumigación. Consulta y administra los trabajos programados en cada hotel.',
   keywords: ['fumigación', 'calendario operativo', 'control de plagas', 'hoteles'],
   robots: 'noindex,nofollow', // app interna
+  icons: {
+    icon: '/images/logo.png',
+    shortcut: '/images/logo.png',
+    apple: '/images/logo.png',
+  },
 }
 
 export default function RootLayout({
