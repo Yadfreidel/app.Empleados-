@@ -96,3 +96,38 @@ export function groupBy<T>(arr: T[], key: keyof T): Record<string, T[]> {
     return acc
   }, {} as Record<string, T[]>)
 }
+
+// ─── Supabase Error Formatter ─────────────────────────────────────
+export function formatSupabaseError(e: unknown, defaultMessage = 'Error al guardar'): string {
+  if (!e) return defaultMessage
+
+  let rawMsg = ''
+  if (typeof e === 'string') {
+    rawMsg = e
+  } else if (typeof e === 'object' && e !== null) {
+    if ('message' in e && typeof (e as { message: unknown }).message === 'string') {
+      rawMsg = (e as { message: string }).message
+    } else if ('error_description' in e && typeof (e as { error_description: unknown }).error_description === 'string') {
+      rawMsg = (e as { error_description: string }).error_description
+    } else if (e instanceof Error) {
+      rawMsg = e.message
+    }
+  }
+
+  if (!rawMsg) return defaultMessage
+
+  if (rawMsg.includes('row-level security policy') || rawMsg.includes('violates row-level security')) {
+    return 'Error de permisos (RLS): Tu usuario no tiene asignado el rol de Administrador en la base de datos Supabase. Ejecuta el script supabase/fix_database.sql en el SQL Editor de Supabase.'
+  }
+  if (rawMsg.includes('violates foreign key constraint') || rawMsg.includes('is not present in table')) {
+    return 'Error de referencia: El elemento seleccionado (hotel o tipo de operación) no existe en la base de datos.'
+  }
+  if (rawMsg.includes('violates not-null constraint')) {
+    return 'Faltan campos obligatorios requeridos por la base de datos.'
+  }
+  if (rawMsg.includes('duplicate key value')) {
+    return 'Ya existe un registro con estos datos.'
+  }
+
+  return rawMsg
+}

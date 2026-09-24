@@ -8,7 +8,7 @@ import Modal, { ConfirmModal } from '@/components/ui/Modal'
 import { Skeleton } from '@/components/ui/Skeleton'
 import EmptyState from '@/components/ui/EmptyState'
 import { operationTypeSchema } from '@/lib/validations'
-import { getContrastText } from '@/lib/utils'
+import { getContrastText, formatSupabaseError } from '@/lib/utils'
 
 const EMPTY_FORM: OperationTypeFormData = {
   name: '', description: '', color: '#15803d', icon: '', active: true,
@@ -171,7 +171,7 @@ export default function OperacionesPage() {
       setModalOpen(false)
       await load()
     } catch (e: unknown) {
-      setFormErr(e instanceof Error ? e.message : 'Error al guardar')
+      setFormErr(formatSupabaseError(e, 'Error al guardar el tipo de operación'))
     } finally {
       setSaving(false)
     }
@@ -187,7 +187,10 @@ export default function OperacionesPage() {
       if (error) throw error
       setDeleteTarget(null)
       await load()
-    } catch (e) { console.error(e) } finally { setDeleting(false) }
+    } catch (e) {
+      console.error(e)
+      alert(formatSupabaseError(e, 'Error al eliminar el tipo de operación'))
+    } finally { setDeleting(false) }
   }
 
   return (

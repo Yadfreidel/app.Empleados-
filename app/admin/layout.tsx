@@ -23,18 +23,38 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [userEmail, setUserEmail]     = useState<string | null>(null)
+  const [roleStatus, setRoleStatus]   = useState<'loading' | 'admin' | 'not_admin' | 'no_profile' | 'demo'>('loading')
 
-  // Get current user email
+  // Get current user email and profile
   useEffect(() => {
     async function getUser() {
       try {
         const { createClient } = await import('@/lib/supabase/client')
         const supabase = createClient()
         const { data: { user } } = await supabase.auth.getUser()
-        setUserEmail(user?.email ?? null)
+        if (user) {
+          setUserEmail(user.email ?? null)
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role, active')
+            .eq('id', user.id)
+            .maybeSingle()
+
+          if (!profile) {
+            setRoleStatus('no_profile')
+          } else if (profile.role === 'admin' && profile.active) {
+            setRoleStatus('admin')
+          } else {
+            setRoleStatus('not_admin')
+          }
+        } else {
+          setUserEmail(null)
+          setRoleStatus('demo')
+        }
       } catch {
         // Supabase not configured yet
         setUserEmail('admin@demo.local')
+        setRoleStatus('demo')
       }
     }
     getUser()
@@ -100,7 +120,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="px-3 py-4 border-t border-slate-100">
           <div className="px-3 py-2.5 mb-1">
             <p className="text-xs font-600 text-slate-800 truncate">{userEmail || '…'}</p>
-            <p className="text-xs text-slate-400">Administrador</p>
+            <p className="text-xs text-slate-400">
+              {roleStatus === 'admin'
+                ? 'Administrador'
+                : roleStatus === 'loading'
+                ? 'Verificando rol…'
+                : roleStatus === 'no_profile'
+                ? 'Sin perfil en BD'
+                : 'Rol: Consulta'}
+            </p>
           </div>
           <button
             onClick={handleLogout}
@@ -134,6 +162,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <NavContent />
             </div>
             <div className="px-3 py-4 border-t border-slate-100">
+              <div className="px-3 py-1 mb-2">
+                <p className="text-xs font-600 text-slate-800 truncate">{userEmail || '…'}</p>
+                <p className="text-xs text-slate-400">
+                  {roleStatus === 'admin' ? 'Administrador' : 'Rol no admin'}
+                </p>
+              </div>
               <button
                 onClick={() => { setSidebarOpen(false); handleLogout() }}
                 className="flex items-center gap-3 w-full px-3 py-2.5 rounded-fm text-sm font-500 text-red-600 hover:bg-red-50 transition-colors"
@@ -164,6 +198,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </Button>
           <Logo size="sm" />
         </header>
+
+        {/* Warning banner if database permissions are not admin */}
+        {(roleStatus === 'no_profile' || roleStatus === 'not_admin') && (
+          <div className="bg-amber-50 border-b border-amber-200 px-4 py-3 text-amber-900 text-sm">
+            <div className="fm-container flex items-start gap-3">
+              <span className="text-lg leading-none">⚠️</span>
+              <div>
+                <p className="font-600">Permisos de Administrador requeridos en la Base de Datos</p>
+                <p className="text-xs text-amber-800 mt-0.5">
+                  Tu usuario (<span className="font-mono">{userEmail}</span>) está autenticado, pero {roleStatus === 'no_profile' ? 'no tiene registro en la tabla profiles' : 'tiene rol "consulta" en lugar de "admin"'}. Esto bloquea el guardado por las políticas de seguridad (RLS). Para solucionarlo, ejecuta el script <code className="bg-amber-100 font-mono px-1 rounded text-amber-900">supabase/fix_database.sql</code> en el SQL Editor de tu Supabase Dashboard.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Page content */}
         <main className="flex-1 fm-container py-6 md:py-8">

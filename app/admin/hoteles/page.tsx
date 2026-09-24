@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import EmptyState from '@/components/ui/EmptyState'
 import type { ReactNode } from 'react'
 import { hotelSchema } from '@/lib/validations'
+import { formatSupabaseError } from '@/lib/utils'
 
 // ── Form ──────────────────────────────────────────────────────────────────────
 const EMPTY_FORM: HotelFormData = {
@@ -143,7 +144,7 @@ export default function HotelesPage() {
       setModalOpen(false)
       await load()
     } catch (e: unknown) {
-      setFormErr(e instanceof Error ? e.message : 'Error al guardar')
+      setFormErr(formatSupabaseError(e, 'Error al guardar el hotel'))
     } finally {
       setSaving(false)
     }
@@ -161,6 +162,7 @@ export default function HotelesPage() {
       await load()
     } catch (e: unknown) {
       console.error(e)
+      alert(formatSupabaseError(e, 'Error al eliminar el hotel'))
     } finally {
       setDeleting(false)
     }

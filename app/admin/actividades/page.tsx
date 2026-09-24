@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import EmptyState from '@/components/ui/EmptyState'
 import { Badge } from '@/components/ui/Badge'
 import { activitySchema } from '@/lib/validations'
-import { formatDate, formatTime, STATUS_LABELS, STATUS_COLORS, PRIORITY_LABELS, PRIORITY_COLORS } from '@/lib/utils'
+import { formatDate, formatTime, STATUS_LABELS, STATUS_COLORS, PRIORITY_LABELS, PRIORITY_COLORS, formatSupabaseError } from '@/lib/utils'
 import type { ActivityStatus, ActivityPriority } from '@/types'
 
 const EMPTY_FORM: ActivityFormData = {
@@ -49,6 +49,9 @@ function ActivityForm({
             <option value="">Seleccionar...</option>
             {hotels.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
           </select>
+          {hotels.length === 0 && (
+            <p className="text-xs text-amber-600 mt-1">⚠️ No hay hoteles registrados. Ve a Hoteles para registrar uno.</p>
+          )}
         </div>
         <div>
           <label className="fm-label">Tipo de operación <span className="text-red-500">*</span></label>
@@ -56,6 +59,9 @@ function ActivityForm({
             <option value="">Seleccionar...</option>
             {opTypes.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
           </select>
+          {opTypes.length === 0 && (
+            <p className="text-xs text-amber-600 mt-1">⚠️ No hay operaciones registradas. Ve a Operaciones para registrar una.</p>
+          )}
         </div>
       </div>
       <div className="grid grid-cols-3 gap-3">
@@ -197,7 +203,7 @@ export default function ActividadesPage() {
       setModalOpen(false)
       await load()
     } catch (e: unknown) {
-      setFormErr(e instanceof Error ? e.message : 'Error al guardar')
+      setFormErr(formatSupabaseError(e, 'Error al guardar la actividad'))
     } finally { setSaving(false) }
   }
 
@@ -211,7 +217,10 @@ export default function ActividadesPage() {
       if (error) throw error
       setDeleteTarget(null)
       await load()
-    } catch (e) { console.error(e) } finally { setDeleting(false) }
+    } catch (e) {
+      console.error(e)
+      alert(formatSupabaseError(e, 'Error al eliminar la actividad'))
+    } finally { setDeleting(false) }
   }
 
   const filtered = activities.filter(a => {
